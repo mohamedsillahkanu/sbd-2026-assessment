@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>SBD 2026 — Staff Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#004080;--navy2:#002952;--navy3:#0056b3;
+  --gold:#ffc107;--gold2:#e6a800;
+  --green:#1a7a3c;--green-l:#e8f5ee;--green-b:#b2dfcc;
+  --red:#c0392b;--red-l:#fff0ee;
+  --gray:#f0f4f8;--border:#dde3ee;
+}
+body{font-family:'Oswald',sans-serif;background:var(--gray);min-height:100vh;color:#1a2533}
+.hdr{background:linear-gradient(135deg,var(--navy2),var(--navy));padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--gold);box-shadow:0 4px 16px rgba(0,20,60,.3)}
+.hdr-logo{width:44px;height:44px;background:#fff;border-radius:9px;border:2px solid var(--gold);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.hdr-txt h1{font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:.5px}
+.hdr-txt p{font-size:.65rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.6px}
+.hdr-timer{margin-left:auto;background:rgba(255,255,255,.1);border:2px solid var(--gold);border-radius:10px;padding:6px 14px;font-size:1.3rem;font-weight:700;color:#fff;letter-spacing:1px;display:none;font-variant-numeric:tabular-nums}
+.hdr-timer.urgent{background:rgba(220,53,69,.3);border-color:#dc3545;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.screen{display:none;min-height:calc(100vh - 72px)}
+.screen.active{display:block}
+/* TABS */
+.tab-bar{background:#fff;border-bottom:2px solid var(--border);display:flex;position:sticky;top:0;z-index:100}
+.tab-btn{flex:1;padding:13px;font-family:'Oswald',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.5px;border:none;background:none;color:#607080;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy)}
+/* WELCOME */
+.welcome-wrap{max-width:500px;margin:0 auto;padding:28px 16px}
+.welcome-card{background:#fff;border-radius:16px;padding:26px 22px;box-shadow:0 6px 24px rgba(0,64,128,.1);border-top:5px solid var(--gold)}
+.welcome-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.6rem}
+.welcome-title{font-size:1.3rem;font-weight:700;color:var(--navy);text-align:center;letter-spacing:.5px;margin-bottom:5px}
+.welcome-sub{font-size:.82rem;color:#607080;text-align:center;margin-bottom:18px;line-height:1.5}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.info-box{background:var(--gray);border-radius:10px;padding:10px;text-align:center;border:2px solid var(--border)}
+.info-val{font-size:1.3rem;font-weight:700;color:var(--navy)}
+.info-lbl{font-size:.6rem;text-transform:uppercase;color:#607080;letter-spacing:.4px;margin-top:1px}
+.field{margin-bottom:13px}
+.label{font-size:.7rem;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px}
+.input{width:100%;border:2px solid var(--border);border-radius:9px;padding:11px 13px;font-family:'Oswald',sans-serif;font-size:.95rem;outline:none;transition:border .2s}
+.input:focus{border-color:var(--navy)}
+.btn{width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.6px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--navy2)}
+.btn:disabled{background:#bbb;cursor:not-allowed}
+.btn-gold{background:var(--gold);color:var(--navy)}
+.btn-gold:hover{background:var(--gold2)}
+.err-msg{color:var(--red);font-size:.78rem;text-align:center;margin-top:8px;display:none}
+/* QUIZ */
+.quiz-wrap{max-width:600px;margin:0 auto;padding:20px 16px}
+.q-progress-bar{height:6px;background:#e0e7ee;border-radius:3px;margin-bottom:6px}
+.q-progress-fill{height:6px;background:linear-gradient(90deg,var(--navy),var(--navy3));border-radius:3px;transition:width .3s}
+.q-meta{display:flex;justify-content:space-between;font-size:.72rem;color:#607080;margin-bottom:14px}
+.q-card{background:#fff;border-radius:14px;padding:22px 20px;box-shadow:0 4px 16px rgba(0,64,128,.1);margin-bottom:16px}
+.q-num{font-size:.7rem;font-weight:700;color:var(--navy3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.q-text{font-size:1rem;font-weight:600;color:#1a2533;line-height:1.55;margin-bottom:18px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;background:#fff}
+.opt:hover{border-color:var(--navy);background:#f0f5ff}
+.opt.selected{border-color:var(--navy);background:#e8f1fb}
+.opt.correct{border-color:var(--green);background:var(--green-l)}
+.opt.wrong{border-color:var(--red);background:var(--red-l)}
+.opt-circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;transition:all .2s}
+.opt.selected .opt-circle{border-color:var(--navy);background:var(--navy);color:#fff}
+.opt.correct .opt-circle{border-color:var(--green);background:var(--green);color:#fff}
+.opt.wrong .opt-circle{border-color:var(--red);background:var(--red);color:#fff}
+.opt-text{font-size:.92rem;line-height:1.4}
+.exp-box{margin-top:14px;background:#f8f4e8;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:.82rem;color:#5a4500;line-height:1.5}
+.q-nav{display:flex;gap:10px;margin-top:4px}
+.q-nav-btn{flex:1;padding:11px;border:2px solid var(--navy);border-radius:9px;font-family:'Oswald',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;background:#fff;color:var(--navy)}
+.q-nav-btn:hover{background:var(--navy);color:#fff}
+.q-nav-btn.primary{background:var(--navy);color:#fff}
+.q-nav-btn.primary:hover{background:var(--navy2)}
+.q-nav-btn.finish{background:linear-gradient(135deg,var(--green),#28a745);color:#fff;border-color:var(--green)}
+/* RESULT */
+.result-wrap{max-width:560px;margin:0 auto;padding:24px 16px}
+.result-banner{border-radius:16px;padding:26px 22px;text-align:center;margin-bottom:20px}
+.result-banner.pass{background:linear-gradient(135deg,#1a8a3a,#28a745)}
+.result-banner.fail{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+.result-banner.timeout{background:linear-gradient(135deg,#7b4f00,#c8991a)}
+.result-stamp{font-size:3rem;margin-bottom:10px}
+.result-score{font-size:2.8rem;font-weight:700;color:#fff;letter-spacing:1px}
+.result-name{font-size:1rem;color:rgba(255,255,255,.85);margin-top:4px}
+.result-verdict{font-size:1.1rem;font-weight:700;color:#fff;margin-top:8px;letter-spacing:.5px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat-box{background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,64,128,.08)}
+.stat-val{font-size:1.6rem;font-weight:700;color:var(--navy)}
+.stat-lbl{font-size:.65rem;text-transform:uppercase;color:#607080;letter-spacing:.4px;margin-top:2px}
+.review-title{font-family:'Oswald',sans-serif;font-size:.85rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.review-item{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:4px solid var(--border)}
+.review-item.ok{border-left-color:var(--green)}
+.review-item.bad{border-left-color:var(--red)}
+.review-q{font-size:.88rem;font-weight:600;color:#1a2533;margin-bottom:5px}
+.review-a{font-size:.8rem;color:#607080}
+.review-item.ok .review-a{color:var(--green)}
+.review-item.bad .review-a{color:var(--red)}
+/* GRADES */
+.grades-wrap{max-width:760px;margin:0 auto;padding:22px 16px}
+.admin-login{max-width:360px;margin:0 auto}
+.grades-hdr{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,64,128,.08)}
+.grades-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi-box{background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,64,128,.08)}
+.kpi-val{font-size:1.5rem;font-weight:700}
+.kpi-lbl{font-size:.65rem;text-transform:uppercase;color:#607080;letter-spacing:.4px;margin-top:2px}
+.grade-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,64,128,.08)}
+.grade-table th{background:linear-gradient(135deg,var(--navy2),var(--navy));color:#fff;padding:10px 12px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+.grade-table td{padding:10px 12px;font-size:.85rem;border-bottom:1px solid var(--border)}
+.grade-table tr:last-child td{border-bottom:none}
+.grade-table tr:hover td{background:#f5f8ff}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.3px}
+.badge.pass{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.badge.fail{background:var(--red-l);color:var(--red);border:1px solid #f0b8b2}
+.badge.timeout{background:#fff8e1;color:#8a6500;border:1px solid #ffe082}
+.sync-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700}
+.sync-pill.ok{background:#e8f5ee;color:var(--green)}
+.sync-pill.pend{background:#fff8e1;color:#8a6500}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">📝</div>
+  <div class="hdr-txt">
+    <h1>SBD 2026 — STAFF ASSESSMENT</h1>
+    <p>ICF-SL · National Malaria Control Programme</p>
+  </div>
+  <div class="hdr-timer" id="hdrTimer">25:00</div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-quiz" onclick="showTab('quiz')">📝 ASSESSMENT</button>
+  <button class="tab-btn" id="tab-grades" onclick="showTab('grades')">📊 GRADES</button>
+</div>
+
+<!-- SCREEN: WELCOME -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-wrap">
+    <div class="welcome-card">
+      <div class="welcome-icon">📝</div>
+      <div class="welcome-title">SBD 2026 KNOWLEDGE ASSESSMENT</div>
+      <div class="welcome-sub">Test your knowledge of the School-Based ITN Distribution programme. Read each question carefully before answering.</div>
+      <div class="info-grid">
+        <div class="info-box"><div class="info-val">50</div><div class="info-lbl">Questions</div></div>
+        <div class="info-box"><div class="info-val">25</div><div class="info-lbl">Minutes</div></div>
+        <div class="info-box"><div class="info-val">100%</div><div class="info-lbl">Pass Mark</div></div>
+      </div>
+      <div class="field">
+        <label class="label">FULL NAME <span style="color:var(--red)">*</span></label>
+        <input class="input" id="participantName" placeholder="Enter your full name" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="label">ROLE <span style="color:var(--red)">*</span></label>
+        <input class="input" id="participantRole" placeholder="e.g. Distributor, Supervisor, DMS Staff">
+      </div>
+      <div class="err-msg" id="welcomeErr">Please enter your full name and role.</div>
+      <div class="err-msg" id="alreadyDoneErr" style="font-size:.85rem;">⛔ You have already completed this assessment. Your result has been recorded.</div>
+      <button class="btn" onclick="startQuiz()" style="margin-top:6px;">START ASSESSMENT →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: QUIZ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill" style="width:0%"></div></div>
+    <div class="q-meta">
+      <span id="qProgress">Question 1 of 50</span>
+      <span id="qAnswered">0 answered</span>
+    </div>
+    <div class="q-card">
+      <div class="q-num" id="qNum">QUESTION 1</div>
+      <div class="q-text" id="qText"></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="exp-box" id="qExp" style="display:none;"></div>
+    </div>
+    <div class="q-nav">
+      <button class="q-nav-btn" onclick="prevQ()">← BACK</button>
+      <button class="q-nav-btn primary" id="nextBtn" onclick="nextQ()">NEXT →</button>
+      <button class="q-nav-btn finish" id="finishBtn" onclick="finishQuiz(false)" style="display:none;">✓ SUBMIT</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: RESULT -->
+<div class="screen" id="screen-result">
+  <div class="result-wrap">
+    <div class="result-banner" id="resultBanner">
+      <div class="result-stamp" id="resultStamp">🏆</div>
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-name" id="resultName"></div>
+      <div class="result-verdict" id="resultVerdict"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="statCorrect" style="color:var(--green)">0</div><div class="stat-lbl">Correct</div></div>
+      <div class="stat-box"><div class="stat-val" id="statWrong" style="color:var(--red)">0</div><div class="stat-lbl">Wrong</div></div>
+      <div class="stat-box"><div class="stat-val" id="statPct" style="color:var(--navy)">0%</div><div class="stat-lbl">Score</div></div>
+    </div>
+    <div class="review-title">📋 REVIEW YOUR ANSWERS</div>
+    <div id="reviewList"></div>
+    <div style="margin-top:14px;background:#f0f4f8;border-radius:10px;padding:14px;text-align:center;font-size:.82rem;color:#607080;">
+      🔒 Assessment complete — one submission only. Hand device back to supervisor.
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: GRADES -->
+<div class="screen" id="screen-grades">
+  <div class="grades-wrap">
+    <div id="adminLoginWrap" class="admin-login">
+      <div class="welcome-card">
+        <div style="text-align:center;font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:14px;">🔒 SUPERVISOR ACCESS</div>
+        <div class="field">
+          <label class="label">PASSWORD</label>
+          <input class="input" id="adminPwd" type="password" placeholder="Enter supervisor password" onkeydown="if(event.key==='Enter')adminLogin()">
+        </div>
+        <div class="err-msg" id="adminErr" style="display:none;">Incorrect password.</div>
+        <button class="btn" onclick="adminLogin()" style="margin-top:6px;">UNLOCK GRADES</button>
+      </div>
+    </div>
+    <div id="gradesDashboard" style="display:none;">
+      <div class="grades-kpi" id="gradesKPI"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div style="font-family:'Oswald',sans-serif;font-size:.85rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;">ALL SUBMISSIONS</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-gold" onclick="syncAllPending()" style="width:auto;padding:7px 14px;font-size:.78rem;">↑ SYNC ALL</button>
+          <button class="btn" onclick="exportCSV()" style="width:auto;padding:7px 14px;font-size:.78rem;background:var(--green);">⬇ EXPORT CSV</button>
+          <button class="btn" onclick="if(confirm('Clear all grades?')){localStorage.removeItem('sbd_grades');renderGrades();}" style="width:auto;padding:7px 14px;font-size:.78rem;background:var(--red);">🗑 CLEAR</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="grade-table" id="gradeTable">
+          <thead><tr>
+            <th>#</th><th>Name</th><th>Role</th><th>Score</th><th>Correct</th><th>Time Used</th><th>Result</th><th>Date/Time</th><th>Sync</th>
+          </tr></thead>
+          <tbody id="gradeBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbymRy-M5v0fVLWUjw4IXYhd1oIR2ZvnP_Dzr_iGR-Th0cMIpmE2ntGeujWYH7-C6NHIzA/exec';
+const ADMIN_PASSWORD = 'admin123';
+const TOTAL_MINUTES  = 25;
+const PASS_SCORE     = 50; // 100% = all 50 correct
+
+// ═══════════════════════════════════════════
+// 50 QUESTIONS
+// ═══════════════════════════════════════════
+const QUESTIONS = [
+  { q:"What does SBD stand for in this programme?", opts:["School-Based Distribution","School Board of Directors","Sierra-Based Delivery","Standard Bed Distribution"], ans:0, exp:"SBD = School-Based Distribution — ITNs distributed through primary schools." },
+  { q:"What does ITN stand for?", opts:["Insecticide-Treated Net","Imported Treatment Network","Insect Treatment Notification","Individual Treatment Net"], ans:0, exp:"ITN = Insecticide-Treated Net, used to prevent malaria." },
+  { q:"Which organisation leads the NMCP in Sierra Leone?", opts:["PMI Evolve","Ministry of Health and Sanitation","WHO Sierra Leone","ICF-SL"], ans:1, exp:"The Ministry of Health and Sanitation (MoHS) leads the NMCP." },
+  { q:"What is the primary purpose of distributing ITNs in schools?", opts:["Decorate classrooms","Protect school children from malaria","Replace home distribution","Generate school revenue"], ans:1, exp:"ITNs protect school children from malaria-carrying mosquito bites." },
+  { q:"What 5-part key prevents duplicate school submissions?", opts:["School enrollment number","Head teacher phone","District|Chiefdom|PHU|Community|School Name","School EMIS number"], ans:2, exp:"The 5-part key ensures uniqueness — same school name in different community = different record." },
+  { q:"What does PHU stand for?", opts:["Primary Health Unit","Public Health Utility","Peripheral Health Unit","Personal Health Undertaking"], ans:2, exp:"PHU = Peripheral Health Unit — the nearest health facility." },
+  { q:"What does EMIS stand for?", opts:["Education Management Information System","Electronic Monitoring Information System","Emergency Medical Identification System","Enrollment Management Integration System"], ans:0, exp:"EMIS = Education Management Information System — the school unique identifier." },
+  { q:"What are the two ITN types in SBD 2026?", opts:["PBO and IG2","NET and SHIELD","TYPE-A and TYPE-B","Standard and Premium"], ans:0, exp:"PBO (Piperonyl Butoxide) and IG2 (Interceptor G2)." },
+  { q:"Who must sign the SBD survey form?", opts:["DMS Staff and Driver","District Officer and Head Teacher","Health Staff and Teacher","Supervisor and Community Leader"], ans:2, exp:"Both Health Staff and Teacher signatures are mandatory." },
+  { q:"What happens when submitted offline?", opts:["Wait for internet","Abandon submission","Saved locally and auto-syncs when online","Call supervisor"], ans:2, exp:"The app works offline — data saves locally and syncs automatically." },
+  { q:"ITN coverage formula?", opts:["ITNs distributed ÷ ITNs received × 100","ITNs distributed ÷ total pupils enrolled × 100","Total pupils ÷ ITNs received × 100","ITNs received ÷ ITNs distributed × 100"], ans:1, exp:"Coverage = (ITNs distributed ÷ total pupils enrolled) × 100." },
+  { q:"Submitted school chip colour in Targets dashboard?", opts:["Red","Grey","Green","Blue"], ans:2, exp:"Submitted schools show as green chips (✓) in the Targets dashboard." },
+  { q:"QR code scanned but missing required fields — what happens?", opts:["Form auto-fills blanks","Error shown, form not filled","App crashes","Redirected to manual entry"], ans:1, exp:"All required QR fields are checked. Missing fields = error message, form not filled." },
+  { q:"What does DMS stand for?", opts:["District Medical Services","Directorate of Medical Supplies","Data Management System","District Malaria Supervisor"], ans:1, exp:"DMS = Directorate of Medical Supplies — manages central store and dispatches ITNs." },
+  { q:"What does the ITN Reconciliation dashboard compare?", opts:["Boys vs girls enrollment","ITNs received at PHU vs ITNs distributed to schools","Schools vs teachers","Budget vs expenditure"], ans:1, exp:"Reconciliation compares ITNs received at PHU vs ITNs distributed to schools." },
+  { q:"School enrollment 150, distributed 120 — coverage rate?", opts:["80%","120%","15%","70%"], ans:0, exp:"(120 ÷ 150) × 100 = 80%." },
+  { q:"What is School Status 'Old' vs 'New'?", opts:["Building age","In target list (Old) or new addition in field (New)","Academic performance","Construction year"], ans:1, exp:"Old = school in the target CSV. New = school added in the field, not in original list." },
+  { q:"What must be done BEFORE tapping SUBMIT?", opts:["Call supervisor","Both Health Staff and Teacher must sign","Download backup","Check internet"], ans:1, exp:"Both signatures mandatory. SUBMIT blocks if either is missing." },
+  { q:"Utilisation rate above 100% in Reconciliation means?", opts:["Excellent coverage","More distributed than received — needs investigation","Target exceeded correctly","Enrollment error"], ans:1, exp:"Impossible — more distributed than received indicates a discrepancy." },
+  { q:"What is the role of the Conveyor in ITN movement?", opts:["Distributes ITNs to students","Transports ITNs from DMS to PHUs","Trains school teachers","Records financial transactions"], ans:1, exp:"Conveyors transport ITNs from the central store (DMS) to PHUs." },
+  { q:"Can the same school be submitted twice with different head teacher names?", opts:["Yes, different head teachers = different record","No — duplicate check uses the 5-part location key, not the head teacher","Only if the supervisor approves","Yes, if it's a different term"], ans:1, exp:"The duplicate key is District|Chiefdom|PHU|Community|School — head teacher name is not part of it." },
+  { q:"What does a QR code scan fill automatically in the form?", opts:["Only school name","District, Chiefdom, PHU, Community, School Name, Enrollment, EMIS, Status","Only enrollment","Only the school name and EMIS"], ans:1, exp:"A valid QR scan fills all location fields plus enrollment, EMIS, and school status." },
+  { q:"What is the ITN Movement module used for?", opts:["Tracking student attendance","Recording dispatch of ITNs from DMS to PHUs","Monitoring distributor performance","Generating QR codes"], ans:1, exp:"ITN Movement records dispatch of ITNs from DMS to PHUs, creating a dispatch record with a unique ID." },
+  { q:"What does the PHU Receipts tab record?", opts:["Student grades","ITNs received at PHU level from DMS","Distributor payments","School enrollment data"], ans:1, exp:"PHU Receipts record confirmation that a PHU received ITNs dispatched by DMS." },
+  { q:"What does GPS capture in the SBD form do?", opts:["Tracks the distributor in real time","Records the school coordinates for mapping","Sends location to supervisor","Unlocks offline mode"], ans:1, exp:"GPS captures the school's coordinates for spatial analysis and mapping." },
+  { q:"Which section of the SBD form captures class-by-class data?", opts:["Section A","Section B","Section C","Section D"], ans:2, exp:"Section C captures enrollment and ITN distribution data for each class (Class 1–5)." },
+  { q:"What is the maximum number of classes captured in the SBD form?", opts:["3","4","5","6"], ans:2, exp:"The form captures data for Classes 1 through 5." },
+  { q:"Boys enrolled: 80, Girls enrolled: 70. Total enrollment?", opts:["140","150","160","130"], ans:1, exp:"80 + 70 = 150 total pupils enrolled." },
+  { q:"What does the Analysis dashboard show?", opts:["Only school names","Aggregated ITN distribution data, coverage rates, and charts","Only pending submissions","Only offline records"], ans:1, exp:"The Analysis dashboard shows aggregated data, coverage charts, and district-level summaries." },
+  { q:"What is the AI Agent in the SBD app used for?", opts:["Auto-submitting forms","Answering data questions about the ITN programme in natural language","Translating the form","Generating QR codes"], ans:1, exp:"The AI Agent lets supervisors ask questions about the data in natural language." },
+  { q:"How are class-level coverage rates calculated?", opts:["Total ITNs ÷ Total pupils × 100 for each class","Number of classes ÷ total ITNs","ITNs received ÷ ITNs distributed","Class size ÷ school enrollment"], ans:0, exp:"For each class: (ITNs distributed ÷ pupils enrolled) × 100." },
+  { q:"What does 'pending submission' mean in the app?", opts:["A draft not yet completed","A submission saved offline waiting to sync to the server","A rejected submission","A duplicate submission"], ans:1, exp:"Pending = saved offline, will sync to Google Sheet when internet is available." },
+  { q:"What colour does a NEW school appear in the Targets dashboard?", opts:["Red","Green","Amber/Gold with a ★ marker","Blue"], ans:2, exp:"New schools (not in target CSV) appear in amber with a ★ marker." },
+  { q:"What does 'School Status: New' indicate?", opts:["The school building is newly constructed","School was added in the field and was not in the original target list","School has new management","School opened this academic year"], ans:1, exp:"New = added in the field, not in the original target CSV list." },
+  { q:"The Data Entry tab requires a password. What is it used for?", opts:["To protect the internet connection","To ensure only authorised field staff can enter data","To lock the device","To activate GPS"], ans:1, exp:"The password protects the data entry form so only authorised distributors can submit." },
+  { q:"What happens when a school is submitted — can the same distributor submit it again?", opts:["Yes, anytime","No — the school is marked as submitted and blocked from duplicate entry","Only with supervisor approval","Yes, if on a different day"], ans:1, exp:"Once submitted, the school key is saved and any repeat attempt is flagged as a duplicate." },
+  { q:"Boys in Class 1: 25. Girls in Class 1: 20. ITNs given: 40. Coverage for Class 1?", opts:["80%","88.9%","40%","100%"], ans:1, exp:"(40 ÷ 45) × 100 = 88.9%." },
+  { q:"What does ICF-SL stand for?", opts:["International Consultancy Firm — Sierra Leone","Informatics Consultancy Firm Sierra Leone","ICT and Community Foundation Sierra Leone","Integrated Care Foundation — Sierra Leone"], ans:1, exp:"ICF-SL = Informatics Consultancy Firm Sierra Leone — the primary technical partner to NMCP." },
+  { q:"What is the subcontract under which ICF-SL implements the SBD tool?", opts:["Subcontract 12345","Subcontract 56444 with Abt Global / PMI Evolve","WHO Grant 2026","Global Fund Round 12"], ans:1, exp:"ICF-SL implements SBD under Subcontract 56444 with Abt Global / PMI Evolve." },
+  { q:"School receives 100 ITNs. Can 105 be distributed?", opts:["Yes if the surplus is donated","No — distributed ITNs cannot exceed received ITNs","Yes with supervisor approval","Yes if enrollment is above 100"], ans:1, exp:"The app blocks this — distributing more than received is not possible." },
+  { q:"What does PMI stand for?", opts:["Programme for Malaria Intervention","President's Malaria Initiative","Primary Malaria Immunisation","Public Malaria Index"], ans:1, exp:"PMI = President's Malaria Initiative — the US government programme funding malaria control." },
+  { q:"What is the purpose of the Head Teacher Phone field?", opts:["Emergency contact only","Unique validation — ensures each school has a unique phone number per submission","Automated SMS alerts","Phone payment verification"], ans:1, exp:"The head teacher phone is validated for uniqueness — duplicate phone numbers across submissions are flagged." },
+  { q:"What does the UPDATE button in the app do?", opts:["Submits all pending data","Checks for a new version of the app and refreshes the service worker cache","Exports data to Excel","Locks the form"], ans:1, exp:"The UPDATE button triggers the service worker to fetch and cache the latest version of the app." },
+  { q:"What is the passing score for this assessment?", opts:["80%","90%","95%","100%"], ans:3, exp:"The pass mark is 100% — all 50 questions must be answered correctly." },
+  { q:"What does the BACK button on the entry method modal do?", opts:["Logs out","Cancels and returns to Section A","Clears the form completely","Saves a draft"], ans:1, exp:"CANCEL on the entry method modal returns the user to Section A without making a selection." },
+  { q:"How many districts are covered in the SBD 2026 programme?", opts:["2","3","4","5"], ans:2, exp:"The SBD 2026 programme covers 4 districts: Koinadugu, Port Loko, Bonthe, and Pujehun." },
+  { q:"What must a distributor do after successfully submitting the form?", opts:["Start a new form immediately","Hand the device back to the supervisor — only one submission per session","Call the head teacher to confirm","Delete the app"], ans:1, exp:"One submission per session. After submitting, the form locks and the device is returned to the supervisor." },
+  { q:"School enrollment: 200. Distributed: 160. Remaining ITNs?", opts:["40","50","60","30"], ans:0, exp:"Received 200, distributed 160 → 200 − 160 = 40 remaining." },
+  { q:"What is the ITN coverage in the previous question?", opts:["70%","80%","75%","85%"], ans:1, exp:"(160 ÷ 200) × 100 = 80%." },
+  { q:"Which of these correctly describes the SBD data flow?", opts:["Distributor → paper → supervisor → DHIS2","Distributor → SBD app → Google Sheet → Analysis dashboard","Distributor → email → ICF-SL → Excel","Distributor → DHIS2 → PMI Evolve"], ans:1, exp:"Data flows from the SBD app directly to Google Sheets, then to the Analysis dashboard." }
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let participant = { name:'', role:'' };
+let current     = 0;
+let answers     = new Array(50).fill(null);
+let answered    = new Array(50).fill(false);
+let adminLoggedIn = false;
+let timerInterval = null;
+let secondsLeft   = TOTAL_MINUTES * 60;
+let quizStartTime = null;
+let timeUsed      = 0;
+
+// ═══════════════════════════════════════════
+// TABS / SCREENS
+// ═══════════════════════════════════════════
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'quiz') {
+    const inResult = document.getElementById('screen-result').classList.contains('active');
+    if (!inResult) showScreen('welcome');
+  } else {
+    showScreen('grades');
+    if (adminLoggedIn) renderGrades();
+  }
+}
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════
+function startTimer() {
+  secondsLeft = TOTAL_MINUTES * 60;
+  quizStartTime = Date.now();
+  const el = document.getElementById('hdrTimer');
+  el.style.display = 'block';
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+    const s = (secondsLeft % 60).toString().padStart(2,'0');
+    el.textContent = m + ':' + s;
+    if (secondsLeft <= 120) el.classList.add('urgent');
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      el.textContent = '00:00';
+      finishQuiz(true); // true = timed out
+    }
+  }, 1000);
+}
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('hdrTimer').style.display = 'none';
+  timeUsed = quizStartTime ? Math.round((Date.now() - quizStartTime) / 1000) : 0;
+}
+
+// ═══════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════
+function startQuiz() {
+  const name = document.getElementById('participantName').value.trim();
+  const role = document.getElementById('participantRole').value.trim();
+  if (!name || !role) {
+    document.getElementById('welcomeErr').style.display = 'block'; return;
+  }
+  document.getElementById('welcomeErr').style.display = 'none';
+
+  // Check if already attempted
+  const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]');
+  const already = grades.find(g => g.name.toLowerCase().trim() === name.toLowerCase().trim());
+  if (already) {
+    document.getElementById('alreadyDoneErr').style.display = 'block'; return;
+  }
+  document.getElementById('alreadyDoneErr').style.display = 'none';
+
+  participant = { name, role };
+  current  = 0;
+  answers  = new Array(50).fill(null);
+  answered = new Array(50).fill(false);
+  showScreen('quiz');
+  renderQuestion();
+  startTimer();
+}
+
+function renderQuestion() {
+  const idx = current;
+  const q   = QUESTIONS[idx];
+  const pct = ((idx + 1) / QUESTIONS.length) * 100;
+  document.getElementById('qProgressFill').style.width = pct + '%';
+  document.getElementById('qProgress').textContent  = `Question ${idx+1} of ${QUESTIONS.length}`;
+  const done = answers.filter(a => a !== null).length;
+  document.getElementById('qAnswered').textContent  = `${done} answered`;
+  document.getElementById('qNum').textContent  = `QUESTION ${idx+1}`;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qExp').style.display  = 'none';
+  document.getElementById('qExp').textContent    = '';
+
+  const opts = document.getElementById('qOpts');
+  opts.innerHTML = q.opts.map((o,i) => `
+    <div class="opt${answers[idx]===i?' selected':''}" onclick="selectOpt(${i})" id="opt-${i}">
+      <div class="opt-circle">${String.fromCharCode(65+i)}</div>
+      <div class="opt-text">${o}</div>
+    </div>`).join('');
+
+  const isLast = idx === QUESTIONS.length - 1;
+  document.getElementById('nextBtn').style.display   = isLast ? 'none' : 'flex';
+  document.getElementById('finishBtn').style.display = isLast ? 'flex' : 'none';
+}
+
+function selectOpt(i) {
+  const idx = current;
+  if (answered[idx]) return; // already locked
+  answers[idx] = i;
+  answered[idx] = true;
+
+  // Show correct/wrong
+  const q = QUESTIONS[idx];
+  document.querySelectorAll('.opt').forEach((el,j) => {
+    if (j === q.ans)  el.classList.add('correct');
+    else if (j === i && i !== q.ans) el.classList.add('wrong');
+    el.style.pointerEvents = 'none';
+  });
+  // Show explanation
+  const exp = document.getElementById('qExp');
+  exp.textContent = q.exp;
+  exp.style.display = 'block';
+
+  // Update answered count
+  const done = answers.filter(a => a !== null).length;
+  document.getElementById('qAnswered').textContent = `${done} answered`;
+}
+
+function nextQ() {
+  if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+}
+function prevQ() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function finishQuiz(timedOut) {
+  stopTimer();
+  const correct = answers.filter((a,i) => a !== null && a === QUESTIONS[i].ans).length;
+  const total   = QUESTIONS.length;
+  const pct     = Math.round((correct / total) * 100);
+  const pass    = correct === PASS_SCORE;
+  const minsUsed = Math.floor(timeUsed / 60);
+  const secsUsed = timeUsed % 60;
+  const timeStr  = `${minsUsed}m ${secsUsed}s`;
+
+  // Save locally
+  const grade = {
+    name:      participant.name,
+    role:      participant.role,
+    correct,
+    total,
+    pct,
+    pass,
+    timedOut:  !!timedOut,
+    timeUsed:  timeStr,
+    datetime:  new Date().toLocaleString('en-SL'),
+    timestamp: Date.now(),
+    synced:    false
+  };
+  const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]');
+  grades.push(grade);
+  localStorage.setItem('sbd_grades', JSON.stringify(grades));
+
+  // Submit to GAS
+  submitGradeToGAS(grade);
+
+  // Show result
+  const banner = document.getElementById('resultBanner');
+  banner.className = 'result-banner ' + (timedOut ? 'timeout' : pass ? 'pass' : 'fail');
+  document.getElementById('resultStamp').textContent   = timedOut ? '⏱' : pass ? '🏆' : '📚';
+  document.getElementById('resultScore').textContent   = `${correct}/${total}`;
+  document.getElementById('resultName').textContent    = participant.name;
+  document.getElementById('resultVerdict').textContent = timedOut
+    ? '⏱ TIME\'S UP — ASSESSMENT ENDED'
+    : pass ? '✓ PASSED — CONGRATULATIONS!'
+    : '✗ NOT PASSED';
+  document.getElementById('statCorrect').textContent  = correct;
+  document.getElementById('statWrong').textContent    = total - correct;
+  document.getElementById('statPct').textContent      = pct + '%';
+
+  // Review
+  const rev = document.getElementById('reviewList');
+  rev.innerHTML = QUESTIONS.map((q,i) => {
+    const ok = answers[i] === q.ans;
+    const yourAns = answers[i] !== null ? q.opts[answers[i]] : '(not answered)';
+    return `<div class="review-item ${ok?'ok':'bad'}">
+      <div class="review-q">${i+1}. ${q.q}</div>
+      <div class="review-a">${ok ? '✓ '+q.opts[q.ans] : '✗ Yours: '+yourAns+' | Correct: '+q.opts[q.ans]}</div>
+    </div>`;
+  }).join('');
+
+  showScreen('result');
+}
+
+// ═══════════════════════════════════════════
+// GAS SUBMIT
+// ═══════════════════════════════════════════
+async function submitGradeToGAS(grade) {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveAssessmentGrade', data: grade })
+    });
+    // Mark as synced
+    const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]');
+    const idx = grades.findIndex(g => g.timestamp === grade.timestamp);
+    if (idx >= 0) { grades[idx].synced = true; localStorage.setItem('sbd_grades', JSON.stringify(grades)); }
+  } catch(e) {
+    // Will be synced manually via SYNC ALL button
+  }
+}
+
+// ═══════════════════════════════════════════
+// ADMIN GRADES
+// ═══════════════════════════════════════════
+function adminLogin() {
+  if (document.getElementById('adminPwd').value === ADMIN_PASSWORD) {
+    adminLoggedIn = true;
+    document.getElementById('adminLoginWrap').style.display  = 'none';
+    document.getElementById('gradesDashboard').style.display = 'block';
+    document.getElementById('adminPwd').value = '';
+    document.getElementById('adminErr').style.display = 'none';
+    renderGrades();
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+  }
+}
+
+function renderGrades() {
+  const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]').sort((a,b)=>b.timestamp-a.timestamp);
+  const total  = grades.length;
+  const passed = grades.filter(g => g.pass).length;
+  const failed = grades.filter(g => !g.pass).length;
+  const avgPct = total ? Math.round(grades.reduce((s,g)=>s+g.pct,0)/total) : 0;
+
+  document.getElementById('gradesKPI').innerHTML = `
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--navy)">${total}</div><div class="kpi-lbl">Total Attempts</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--green)">${passed}</div><div class="kpi-lbl">Passed (100%)</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--red)">${failed}</div><div class="kpi-lbl">Not Passed</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--navy)">${avgPct}%</div><div class="kpi-lbl">Avg Score</div></div>`;
+
+  const body = document.getElementById('gradeBody');
+  if (!grades.length) {
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">No submissions yet</td></tr>'; return;
+  }
+  body.innerHTML = grades.map((g,i) => `
+    <tr>
+      <td style="color:#aaa;font-size:.75rem;">${total-i}</td>
+      <td style="font-weight:600;">${g.name}</td>
+      <td style="color:#607080;">${g.role}</td>
+      <td style="font-weight:700;color:${g.pct>=100?'var(--green)':g.pct>=50?'var(--navy)':'var(--red)'};">${g.pct}%</td>
+      <td>${g.correct}/${g.total}</td>
+      <td>${g.timeUsed||'—'}</td>
+      <td><span class="badge ${g.timedOut?'timeout':g.pass?'pass':'fail'}">${g.timedOut?'TIMEOUT':g.pass?'PASS':'FAIL'}</span></td>
+      <td style="font-size:.78rem;color:#607080;">${g.datetime}</td>
+      <td><span class="sync-pill ${g.synced?'ok':'pend'}">${g.synced?'✓ Synced':'Pending'}</span></td>
+    </tr>`).join('');
+}
+
+async function syncAllPending() {
+  const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]');
+  const pending = grades.filter(g => !g.synced);
+  if (!pending.length) { alert('All grades already synced.'); return; }
+  let count = 0;
+  for (const g of pending) {
+    try {
+      await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'saveAssessmentGrade', data:g }) });
+      g.synced = true; count++;
+    } catch(e) {}
+  }
+  localStorage.setItem('sbd_grades', JSON.stringify(grades));
+  renderGrades();
+  alert(`Synced ${count} of ${pending.length} records.`);
+}
+
+function exportCSV() {
+  const grades = JSON.parse(localStorage.getItem('sbd_grades')||'[]');
+  if (!grades.length) { alert('No data to export.'); return; }
+  const rows = [['Name','Role','Score %','Correct','Total','Time Used','Result','Timed Out','Date/Time','Synced']];
+  grades.forEach(g => rows.push([g.name,g.role,g.pct,g.correct,g.total,g.timeUsed||'',g.pass?'PASS':'FAIL',g.timedOut?'Yes':'No',g.datetime,g.synced?'Yes':'No']));
+  const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'assessment_grades_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
